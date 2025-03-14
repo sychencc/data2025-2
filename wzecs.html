@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>文字二叉树</title>
+    <style>
+        canvas {
+            background-color: #ffffff;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+    
+        canvas.width = 1600;
+        canvas.height = 1200; 
+
+        const initialLength = 300; 
+        const reductionFactor = 0.7; 
+        const depth = 10; 
+        const trunkWidth = 30;
+        const textColor = '#0f1e55'; 
+        const startX = canvas.width / 2;
+        const startY = canvas.height - 150; 
+        const text = "此恨绵绵无绝期";
+
+        function getCharWidth(char, font) {
+            ctx.font = font;
+            return ctx.measureText(char).width;
+        }
+
+        function drawTree(x, y, length, angle, depth, width) {
+            if (depth === 0) {
+                return;
+            }
+
+            ctx.font = `${width}px Arial`;
+            const charWidths = Array.from(text).map(char => getCharWidth(char, `${width}px Arial`));
+            const totalWidth = charWidths.reduce((sum, width) => sum + width, 0);
+
+
+            const endX = x + totalWidth * Math.cos(angle);
+            const endY = y + totalWidth * Math.sin(angle);
+
+ 
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.fillStyle = textColor;
+            ctx.font = `${width}px Arial`;
+            let offsetX = 0;
+            for (let i = 0; i < text.length; i++) {
+                ctx.fillText(text[i], offsetX, 0);
+                offsetX += charWidths[i];
+            }
+            ctx.restore();
+
+            const randomAngleOffset = (Math.random() - 0.5) * Math.PI / 6; 
+            const leftAngle = angle - Math.PI / 6 + randomAngleOffset;
+            const rightAngle = angle + Math.PI / 6 + randomAngleOffset;
+
+
+            const randomReduction = reductionFactor + Math.random() * 0.1;
+            const newLength = totalWidth * randomReduction;
+
+
+            drawTree(endX, endY, newLength, leftAngle, depth - 1, width * 0.7);
+            drawTree(endX, endY, newLength, rightAngle, depth - 1, width * 0.7);
+        }
+
+
+        function drawRootText() {
+            ctx.save();
+            ctx.translate(startX, startY);
+            ctx.rotate(-Math.PI / 2); 
+
+            ctx.font = `${trunkWidth}px Arial`;
+            const charWidths = Array.from(text).map(char => getCharWidth(char, `${trunkWidth}px Arial`));
+            const totalWidth = charWidths.reduce((sum, width) => sum + width, 0);
+
+      
+            ctx.fillStyle = textColor;
+            ctx.font = `${trunkWidth}px Arial`;
+            let offsetX = 0;
+            for (let i = 0; i < text.length; i++) {
+                ctx.fillText(text[i], offsetX, 0);
+                offsetX += charWidths[i];
+            }
+
+            const randomReduction = reductionFactor + Math.random() * 0.1;
+            const newLength = totalWidth * randomReduction;
+
+            const randomAngleOffset = (Math.random() - 0.5) * Math.PI / 6; 
+            const leftAngle = -Math.PI / 6 + randomAngleOffset;
+            const rightAngle = Math.PI / 6 + randomAngleOffset;
+
+            drawTree(totalWidth, 0, newLength, leftAngle, depth - 1, trunkWidth * 0.7);
+            drawTree(totalWidth, 0, newLength, rightAngle, depth - 1, trunkWidth * 0.7);
+
+            ctx.restore();
+        }
+
+        ctx.fillStyle = '#333';
+        ctx.font = '30px Arial'; 
+        ctx.textAlign = 'center';
+        ctx.fillText('文字二叉树', canvas.width / 2, 50);
+
+        drawRootText();
+    </script>
+</body>
+</html>
